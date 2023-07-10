@@ -1,0 +1,128 @@
+service: au-partnersbackend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  httpApi:
+    cors: true
+
+functions:
+  AamhiUniqueRegisterPartner:
+    handler: src/registerpartner.execute
+    name: ${self:service}-register-aamhi-unique-partner
+    role: AamhiUniqueRegisterPartnerRole
+    logSubscription: true
+    package:
+      exclude:
+        - ./**
+      include:
+        - ./src/registerpartner.py
+    events:
+      - http:
+          path: /${self:service}/aamhi-unique-register-partner
+          method: post
+          # authorizer:
+          #   type: token
+          #   identitySource: method.request.header.Authorization
+          #   arn: arn:aws:cognito-idp:us-east-1:124375682725:userpool/us-east-1_g0pSXvXvW
+    environment:
+      apiID: !Ref ApiGatewayRestApi
+      AAMHI_UNIQUE_REGISTER_TABLE: !Ref partnersTable
+
+  AamhiUniqueLoginPartner:
+    handler: src/loginpartner.execute
+    name: ${self:service}-login-aamhi-unique-partner
+    role: AamhiUniqueRegisterPartnerRole
+    logSubscription: true
+    package:
+      exclude:
+        - ./**
+      include:
+        - ./src/loginpartner.py
+    events:
+      - http:
+          path: /${self:service}/aamhi-unique-login-partner
+          method: post
+          # authorizer:
+          #   type: token
+          #   identitySource: method.request.header.Authorization
+          #   arn: arn:aws:cognito-idp:us-east-1:124375682725:userpool/us-east-1_g0pSXvXvW
+    environment:
+      apiId: !Ref ApiGatewayRestApi
+      AAMHI_UNIQUE_REGISTER_TABLE: !Ref partnersTable
+
+resources:
+  Resources:
+    partnersTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:service}-partners-table
+        AttributeDefinitions:
+          - AttributeName: 'partnerID'
+            AttributeType: 'S'
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: 'partnerID'
+            KeyType: 'HASH'
+        Tags:
+          - Key: name
+            Value: partners-table
+    cognitoAamhiPartnerPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UsernameAttributes:
+          - email
+        UserPoolName: 'AamhiUniquePartner'
+
+    cognitoAamhiPartnerPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: Web
+        UserPoolId: !Ref cognitoAamhiPartnerPool
+
+    cognitoAamhiUniquePartnerGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: 'This Group is for partner who adds advertisements'
+        GroupName: AamhiUniquePartner
+        Precedence: 0
+        RoleArn: !GetAtt AamhiUniqueRegisterPartnerRole.Arn
+        UserPoolId: !Ref cognitoAamhiPartnerPool
+
+    AamhiUniqueRegisterPartnerRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: AamhiUniqueRegisterPartnerRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: AamhiUniqueRegisterPartnerRolePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - 'dynamodb:GetItem'
+                    - 'dynamodb:PutItem'
+                    - 'dynamodb:BatchGetItem'
+                    - 'dynamodb:BatchWriteItem'
+                  Resource:
+                    - !GetAtt partnersTable.Arn
+                - Effect: Allow
+                  Action:
+                    - 'logs:*'
+                  Resource:
+                    - '*'
+        Tags:
+          - Key: name
+            Value: aamhiunique-partners-role
