@@ -9,8 +9,8 @@ def execuete(event, context):
         if "body" in event.keys():
             data = event["body"]
             partner = json.loads(data)
-            email = partner["email"]
-            password = partner["password"]
+            email = partner["partnerEmail"]
+            password = partner["partnerPassword"]
             partnerExists = get_partner_by_email_password(email, password)
             if partnerExists:
                 return {
@@ -31,8 +31,7 @@ def execuete(event, context):
 
 def get_partner_by_email_password(email, password):
     dynamodb = boto3.client('dynamodb')
-    table = os.environ.get("AAMHI_UNIQUE_REGISTER_TABLE")
-    print(table)
+    table = os.environ.get("AAMHI_UNIQUE_PARTNER_REGISTER_TABLE")
     try:
         response = dynamodb.scan(
             TableName=table,
@@ -42,7 +41,6 @@ def get_partner_by_email_password(email, password):
                 'password': {'S': password}
             }
         )
-        print(response)
         return len(response['Items']) > 0
     except Exception as e:
         print(f'Error searching DynamoDB table: {e}')

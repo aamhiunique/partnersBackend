@@ -30,7 +30,7 @@ functions:
           #   arn: arn:aws:cognito-idp:us-east-1:124375682725:userpool/us-east-1_g0pSXvXvW
     environment:
       apiID: !Ref ApiGatewayRestApi
-      AAMHI_UNIQUE_REGISTER_TABLE: !Ref partnersTable
+      AAMHI_UNIQUE_PARTNER_REGISTER_TABLE: !Ref partnersTable
 
   AamhiUniqueLoginPartner:
     handler: src/loginpartner.execute
@@ -52,7 +52,7 @@ functions:
           #   arn: arn:aws:cognito-idp:us-east-1:124375682725:userpool/us-east-1_g0pSXvXvW
     environment:
       apiId: !Ref ApiGatewayRestApi
-      AAMHI_UNIQUE_REGISTER_TABLE: !Ref partnersTable
+      AAMHI_UNIQUE_PARTNER_REGISTER_TABLE: !Ref partnersTable
 
 resources:
   Resources:
@@ -116,6 +116,7 @@ resources:
                     - 'dynamodb:PutItem'
                     - 'dynamodb:BatchGetItem'
                     - 'dynamodb:BatchWriteItem'
+                    - 'dynamodb:Scan'
                   Resource:
                     - !GetAtt partnersTable.Arn
                 - Effect: Allow
