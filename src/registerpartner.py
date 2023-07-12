@@ -15,6 +15,7 @@ def execute(event, context):
             contact = partner["contact"]
             aadharcard = partner["aadhar"]
             pancard = partner["pancard"]
+
             partnerExistsByEmail = get_partner_by_email(email)
             partnerExistsByContact = get_partner_by_contact(contact)
             partnerExistsByPancard = get_partner_by_pancard(pancard)

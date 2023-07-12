@@ -28,7 +28,7 @@ def execuete(event, context):
                     "statusCode": "503",
                     "body": "Error while login"
             }
-            
+
 def get_partner_by_email_password(email, password):
     dynamodb = boto3.client('dynamodb')
     table = os.environ.get("AAMHI_UNIQUE_REGISTER_TABLE")
