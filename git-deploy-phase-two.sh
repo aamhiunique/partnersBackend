@@ -27,3 +27,4 @@ if [[ $output =~ $searchString ]]; then
 else
   echo "Deploying on AWS"
 fi
+
