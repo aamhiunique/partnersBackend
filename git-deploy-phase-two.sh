@@ -24,6 +24,17 @@ echo "sls deploy output:"
 searchString="Deploying"
 if [[ $output =~ $searchString ]]; then
   npm install -g serverless
+  
+  echo "Enter AWS Access Key: "
+  read AWSKey
+
+  echo "Enter AWS SECRET: "
+  read SECRETKey
+
+  serverless config credentials --provider aws --key $AWSKey --secret $SECRETKey
+
+  sls deploy 
+  echo ""
 else
   echo "Deploying on AWS"
 fi

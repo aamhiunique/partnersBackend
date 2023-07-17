@@ -1,10 +1,10 @@
 import json
 import os
-import boto3
+
 
 TAG="Login Aamhi unique Partner"
 
-def execuete(event, context):
+def execute(event, context):
     try:
         if "body" in event.keys():
             data = event["body"]
@@ -35,10 +35,10 @@ def get_partner_by_email_password(email, password):
     try:
         response = dynamodb.scan(
             TableName=table,
-            FilterExpression='email= :email and password= :password',
+            FilterExpression='partnerEmail= :partnerEmail and partnerPassword= :partnerPassword',
             ExpressionAttributeValues={
-                ':email': {'S': email},
-                'password': {'S': password}
+                ':partnerEmail': {'S': email},
+                ':partnerPassword': {'S': password}
             }
         )
         return len(response['Items']) > 0
