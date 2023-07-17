@@ -17,13 +17,13 @@ def execute(event, context):
             partnerEmail = partner["partnerEmail"]
             partnerContact = partner["partnerContact"]
             partnerPassword = partner["partnerPassword"]
-            aadhar = partner["aadhar"]
-            pan = partner["pan"]
+            aadharcard = partner["aadhar"]
+            pancard = partner["pan"]
 
             partnerExistsByEmail = get_partner_by_email(partnerEmail)
             partnerExistsByContact = get_partner_by_contact(partnerContact)
-            partnerExistsByPancard = get_partner_by_pancard(pan)
-            partnerExistsByAadharCard = get_partner_by_aadharcard(aadhar)
+            partnerExistsByPancard = get_partner_by_pancard(pancard)
+            partnerExistsByAadharCard = get_partner_by_aadharcard(aadharcard)
 
             if partnerExistsByEmail:
                 return{
@@ -39,16 +39,16 @@ def execute(event, context):
             elif partnerExistsByPancard:
                 return {
                     "statusCode": "409",
-                    "body": f'Partner with Pancard {pan} already exists'
+                    "body": f'Partner with Pancard {pancard} already exists'
                 }
             elif partnerExistsByAadharCard:
                 return {
                     "statusCode": "409",
-                    "body": f'Partner with Aadharcard {aadhar} already exists'
+                    "body": f'Partner with Aadharcard {aadharcard} already exists'
                 }
             else:
                 print(partnerId)
-                res = put_data_to_dynamo(partnerId, partnerFname, partnerLname, partnerEmail, partnerPassword, aadhar, pan)
+                res = put_data_to_dynamo(partnerId, partnerFname, partnerLname, partnerEmail,partnerContact, partnerPassword, aadharcard, pancard)
                 return {
                         "statusCode": "201",
                         "body": "Partner Register Successfully"
@@ -64,31 +64,24 @@ def get_random_id():
     id=str(uuid.uuid4())
     return id
 
-def get_dynamo():
+
+def put_data_to_dynamo(partnerId, partnerFname, partnerLname, partnerEmail, partnerContact, partnerPassword,aadharcard,pancard):
+    partnerUsername = partnerFname[0:3] + partnerLname[0:3]
     table = os.environ.get("AAMHI_UNIQUE_PARTNER_REGISTER_TABLE")
     dynamo = boto3.resource("dynamodb")
     dynamoTable = dynamo.Table(table)
-    return dynamoTable
-
-
-def put_data_to_dynamo(partnerId, partnerFname, partnerLname, partnerEmail, partnerContact, partnerPassword,aadhar,pan):
-    print("hello")
-    print(pan)
-    dynamoObj = get_dynamo()
-    print(pan)
-    partnerUsername = partnerFname[0:3] + partnerLname[0:3]
-    dynamoObj.put_item(
+    dynamoTable.put_item(
         Item={
             "partnerId":partnerId,
             "partnerFname":partnerFname,
             "partnerLname":partnerLname,
             "partnerUsername": partnerUsername,
-            "aadharcard":aadhar,
-            "pancard":pan,
-            "email": partnerEmail,
-            "password":partnerPassword,
+            "aadharcard":aadharcard,
+            "pancard":pancard,
+            "partnerEmail": partnerEmail,
+            "partnerPassword":partnerPassword,
             "active": 0,
-            "contact": partnerContact
+            "partnerContact": partnerContact
         }
     )
     return "Success"

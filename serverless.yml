@@ -61,11 +61,11 @@ resources:
       Properties:
         TableName: ${self:service}-partners-table
         AttributeDefinitions:
-          - AttributeName: 'partnerID'
+          - AttributeName: 'partnerId'
             AttributeType: 'S'
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: 'partnerID'
+          - AttributeName: 'partnerId'
             KeyType: 'HASH'
         Tags:
           - Key: name
